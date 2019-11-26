@@ -89,15 +89,18 @@
 
 	function Block(color) {
 		this.color = color;
+		this.clicked = function() {
+			this.color = "lightgray";
+		}
 	}
 
 	function findBlockContaining(x, y){
 		for( let row of rows ){
-			console.log("y = " + row.y + "," + (row.y + height));
-			if( y > row.y && y < (row.y + height)) {
-				let b = Math.floor(canvas.width / (x*width));
-				console.log("b = " + b);
-				return row.blocks[Math.floor(Math.floor(canvas.width / (x*width)))];
+			let min = row.y;
+			let max = row.y+height;
+			if( y > min && y < max ){
+				let b = Math.floor(x/width);
+				return row.blocks[Math.floor(x/width)];
 			}
 		}
 		return null;
@@ -105,9 +108,11 @@
 
 
 	canvas.addEventListener('mouseup', function(evt) {
-        var mousePos = getMousePos(canvas, evt);
-        var message = 'Mouse position: ' + mousePos.x + ',' + mousePos.y + ' - block: ' + findBlockContaining(x, y);
-        console.log(message);
+        let mousePos = getMousePos(canvas, evt);
+        let block = findBlockContaining(mousePos.x, mousePos.y);
+		if( block ){
+			block.clicked();
+		}
     }, false);
 
 	function getMousePos(canvas, evt) {
