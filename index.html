@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>Gamedev Canvas Workshop</title>
+    <title>Tiles Game</title>
 	<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
     	* { padding: 0; margin: 0; }
@@ -11,16 +11,24 @@
 </head>
 <body>
 
-<canvas id="myCanvas" width="450" height="350"></canvas>
+<div id="scoreboard">
+	Score: <span id="score">0</span><br/>
+	Sequence: blue, yellow<br/>
+	Next: <span id="next">blue</span>
+</div>
+<canvas id="myCanvas" width="450" height="600"></canvas>
 
 <script type="text/babel">
 	var canvas = document.getElementById("myCanvas");
 	var ctx = canvas.getContext("2d");
 
-    var colors = ["blue", "green", "black", "grey", "yellow"];
+	var points = 0;
+    var colors = ["blue", "green", "yellow"];
+	var sequence = ["blue", "yellow"];
+	var seqPointer = 0;
 	var interval = 30;
-    var width = 50;
-	var height = 50;
+    var width = 75;
+	var height = 75;
     var x = 0;
 	var y = -height;
 	var dx = 0;
@@ -34,6 +42,7 @@
 	for( let i=0; i<numRows+1; i++ ){
 		rows.push(new Row(y + (i*height), numBlocks));
 	}
+
 
     function clearScreen() {
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -67,8 +76,20 @@
 		for( let row of rows ){
 			drawRow(row);
 		}
+		document.getElementById("score").innerHTML = points + "";
+		document.getElementById("next").innerHTML = curSeq();
 	}
 
+	function curSeq() {
+		return sequence[seqPointer];
+	}
+	
+	function incSequence() {
+		seqPointer++;
+		if( seqPointer === sequence.length ){
+			seqPointer = 0;
+		}
+	}
 
     function randomColor() {
 		return colors[Math.floor(Math.random() * colors.length)];
@@ -111,7 +132,16 @@
         let mousePos = getMousePos(canvas, evt);
         let block = findBlockContaining(mousePos.x, mousePos.y);
 		if( block ){
-			block.clicked();
+            let found = false;
+			if( block.color === curSeq()  ){
+            	points++;
+            	incSequence();
+				block.clicked();
+ 				found = true;
+			}
+			if( !found ){
+				points--;
+			}
 		}
     }, false);
 
