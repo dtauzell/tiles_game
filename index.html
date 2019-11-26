@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Gamedev Canvas Workshop</title>
+	<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+    	* { padding: 0; margin: 0; }
+    	canvas { background: #eee; display: block; margin: 0 auto; }
+    </style>
+</head>
+<body>
+
+<canvas id="myCanvas" width="450" height="350"></canvas>
+
+<script type="text/babel">
+	var canvas = document.getElementById("myCanvas");
+	var ctx = canvas.getContext("2d");
+
+    var colors = ["blue", "green", "black", "grey", "yellow"];
+	var interval = 30;
+    var width = 50;
+	var height = 50;
+    var x = 0;
+	var y = -height;
+	var dx = 0;
+	var dy = 2;
+
+    var rows = [];
+	var numRows = canvas.height / height;
+	var numBlocks = canvas.width / width;
+
+
+	for( let i=0; i<numRows+1; i++ ){
+		rows.push(new Row(y + (i*height), numBlocks));
+	}
+
+    function clearScreen() {
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+	}
+
+	function drawRow(row) {
+		let x = 0;
+		for( let block of row.blocks ){
+			ctx.beginPath();
+			ctx.rect(x, row.y, width, height);
+			ctx.fillStyle = block.color;
+			ctx.fill();
+			ctx.closePath();
+
+			ctx.beginPath();
+			ctx.strokeStyle = "white";
+			ctx.rect(x, row.y, width, height);
+			ctx.stroke();
+			ctx.closePath();
+			x += width;
+		}
+		row.y += dy;
+		if( row.y > canvas.height ){
+			row.y = -height;
+			row.updateColors();
+		}
+	}
+
+	function draw() {
+		clearScreen();
+		for( let row of rows ){
+			drawRow(row);
+		}
+	}
+
+
+    function randomColor() {
+		return colors[Math.floor(Math.random() * colors.length)];
+	}
+
+    function Row(y, numBlocks) {
+		this.y = y;
+		this.blocks = [];
+		for( let i=0; i<numBlocks; i++ ){
+			this.blocks.push(new Block(randomColor()));
+		}
+        this.updateColors = function() {
+			for( let block of this.blocks ){
+				block.color = randomColor();
+			}
+		}
+	}
+
+	function Block(color) {
+		this.color = color;
+	}
+
+	function findBlockContaining(x, y){
+		for( let row of rows ){
+			console.log("y = " + row.y + "," + (row.y + height));
+			if( y > row.y && y < (row.y + height)) {
+				let b = Math.floor(canvas.width / (x*width));
+				console.log("b = " + b);
+				return row.blocks[Math.floor(Math.floor(canvas.width / (x*width)))];
+			}
+		}
+		return null;
+	}
+
+
+	canvas.addEventListener('mouseup', function(evt) {
+        var mousePos = getMousePos(canvas, evt);
+        var message = 'Mouse position: ' + mousePos.x + ',' + mousePos.y + ' - block: ' + findBlockContaining(x, y);
+        console.log(message);
+    }, false);
+
+	function getMousePos(canvas, evt) {
+        var rect = canvas.getBoundingClientRect();
+        return {
+          x: evt.clientX - rect.left,
+          y: evt.clientY - rect.top
+        };
+     }
+
+    
+	setInterval(draw, 30);
+
+</script>
+
+</body>
+</html>
